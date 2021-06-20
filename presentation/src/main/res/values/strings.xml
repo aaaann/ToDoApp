@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Сделать</string>
+    <string name="main_page_title">Мои дела</string>
+    <string name="done_title">Выполнено — %1$d</string>
+    <string name="show_done">Показать выполненные</string>
+    <string name="hide_done">Скрыть выполненные</string>
+</resources>

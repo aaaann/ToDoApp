@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorTransparent">@android:color/transparent</color>
+    <color name="colorBackground">#F7F6F2</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorTertiary">#4D000000</color>
+    <color name="colorBlue">#007AFF</color>
+</resources>
