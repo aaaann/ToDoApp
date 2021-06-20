@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="task"
+            type="com.annevonwolffen.domain.Task" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/list_item_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingBottom="@dimen/padding_medium_small"
+        android:paddingEnd="@dimen/padding_medium"
+        android:paddingStart="@dimen/padding_medium"
+        android:paddingTop="@dimen/padding_medium_small">
+
+        <CheckBox
+            android:id="@+id/done_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="@{task.done}"
+            android:padding="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/task_title"
+            android:layout_width="@dimen/constraint_match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_extra_tiny"
+            android:layout_marginEnd="@dimen/task_title_margin_end"
+            android:layout_marginStart="@dimen/margin_medium_small"
+            android:layout_marginTop="@dimen/margin_extra_tiny"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:text="@{task.title}"
+            android:textAppearance="@style/TextAppearance.ToDoApp.Body"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/done_checkbox"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Купить что-то, где-то, зачем-то, но зачем не очень понятно, но точно чтобы показать как обрезается в три точки в конце при достижении текста длины больше трех строк" />
+
+        <TextView
+            android:id="@+id/date_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_extra_tiny"
+            android:layout_marginTop="@dimen/margin_extra_tiny"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{task.deadline}"
+            android:textAppearance="@style/TextAppearance.ToDoApp.Subhead.Tertiary"
+            app:layout_constraintStart_toStartOf="@+id/task_title"
+            app:layout_constraintTop_toBottomOf="@+id/task_title"
+            app:visibility="@{!task.deadline.empty}"
+            tools:text="27 июня 2021"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
+            android:src="@drawable/ic_info_outline_24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/colorTertiary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
