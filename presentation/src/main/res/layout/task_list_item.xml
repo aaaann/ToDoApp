@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="com.annevonwolffen.todoapp.R"/>
 
         <variable
             name="task"
@@ -35,14 +36,15 @@
             android:id="@+id/task_title"
             android:layout_width="@dimen/constraint_match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_extra_tiny"
-            android:layout_marginEnd="@dimen/task_title_margin_end"
             android:layout_marginStart="@dimen/margin_medium_small"
             android:layout_marginTop="@dimen/margin_extra_tiny"
+            android:layout_marginEnd="@dimen/task_title_margin_end"
+            android:layout_marginBottom="@dimen/margin_extra_tiny"
             android:ellipsize="end"
             android:maxLines="3"
             android:text="@{task.title}"
-            android:textAppearance="@style/TextAppearance.ToDoApp.Body"
+            android:textAppearance="@{task.done ? R.style.TextAppearance_ToDoApp_Body_Tertiary : R.style.TextAppearance_ToDoApp_Body}"
+            app:isCrossedOut="@{task.done}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/done_checkbox"
             app:layout_constraintTop_toTopOf="parent"

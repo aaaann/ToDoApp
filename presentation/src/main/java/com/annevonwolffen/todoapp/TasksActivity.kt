@@ -11,6 +11,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
@@ -36,6 +38,17 @@ class TasksActivity : AppCompatActivity() {
         }
         setLightStatusBar()
         setUpAppbar()
+        setUpRecyclerView()
+    }
+
+    private fun setUpRecyclerView() {
+        findViewById<RecyclerView>(R.id.tasks_rv).run {
+            adapter = TasksAdapter(tasksViewModel)
+            val callback =
+                ItemTouchHelperCallback(adapter as ItemTouchHelperCallback.ItemTouchHelperAdapter)
+            val itemTouchHelper = ItemTouchHelper(callback)
+            itemTouchHelper.attachToRecyclerView(this)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

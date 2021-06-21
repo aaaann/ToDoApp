@@ -17,7 +17,7 @@
     <dimen name="margin_small">10dp</dimen>
     <dimen name="margin_medium_small">12dp</dimen>
     <dimen name="margin_medium">16dp</dimen>
-    <dimen name="visibility_icon_margin_end">24dp</dimen>
+    <dimen name="margin_medium_big">24dp</dimen>
     <dimen name="task_title_margin_end">52dp</dimen>
     <dimen name="collapsing_toolbar_margin_start">60dp</dimen>
 
@@ -27,7 +27,7 @@
     <!-- corners radius -->
     <dimen name="corner_radius">8dp</dimen>
 
-    <!-- Elevation -->
+    <!-- elevation -->
     <dimen name="elevation_zero">0dp</dimen>
     <dimen name="elevation_tiny">2dp</dimen>
 
