@@ -1,6 +1,8 @@
 package com.annevonwolffen.todoapp.utils
 
+import android.graphics.Paint
 import android.view.View
+import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.domain.Task
@@ -13,10 +15,16 @@ fun View.setVisibility(isVisible: Boolean) {
 
 @BindingAdapter("tasksData")
 fun RecyclerView.setTasks(tasks: List<Task>?) {
-    if (adapter == null) {
-        adapter = TasksAdapter()
-    }
     tasks?.takeIf { adapter is TasksAdapter }?.let {
         (adapter as TasksAdapter).submitList(tasks)
+    }
+}
+
+@BindingAdapter("isCrossedOut")
+fun TextView.setCrossedOut(isCrossedOutNeeded: Boolean) {
+    paintFlags = if (isCrossedOutNeeded) {
+        paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+    } else {
+        paintFlags and (Paint.STRIKE_THRU_TEXT_FLAG.inv())
     }
 }

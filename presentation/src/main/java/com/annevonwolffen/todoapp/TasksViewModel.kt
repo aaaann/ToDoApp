@@ -9,7 +9,7 @@ import com.annevonwolffen.domain.Task
 /**
  *
  */
-class TasksViewModel : ViewModel() {
+class TasksViewModel : ViewModel(), TaskItemActionListener {
     val tasks: LiveData<List<Task>>
         get() = _tasks
     private val _tasks = MutableLiveData<List<Task>>(emptyList())
@@ -32,5 +32,19 @@ class TasksViewModel : ViewModel() {
                 Task(id = 13, title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер", deadline = "22. июня 2021 09:00", priority = Priority.LOW),
                 Task(id = 14, title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер", deadline = "22. июня 2021 09:00", priority = Priority.LOW)
         )
+    }
+
+    override fun onDoneTask(id: Long) {
+        _tasks.value = _tasks.value?.toMutableList()?.apply {
+            val doneTask = firstOrNull { it.id == id }
+            doneTask?.let { this[indexOf(it)] = it.copy(isDone = !it.isDone) }
+        }
+        // TODO: later send request to server
+    }
+
+    override fun onDeleteTask(id: Long) {
+        _tasks.value = _tasks.value?.toMutableList()?.apply {
+            remove(firstOrNull { it.id == id })
+        }
     }
 }

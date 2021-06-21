@@ -1,5 +1,6 @@
 package com.annevonwolffen.todoapp
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +11,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.domain.Task
 
-class TasksAdapter : ListAdapter<Task, TasksAdapter.ViewHolder>(DiffUtilCallback()) {
+class TasksAdapter(private val itemActionListener: TaskItemActionListener) :
+    ListAdapter<Task, TasksAdapter.ViewHolder>(DiffUtilCallback()),
+    ItemTouchHelperCallback.ItemTouchHelperAdapter {
 
     class DiffUtilCallback : DiffUtil.ItemCallback<Task>() {
 
@@ -22,26 +25,17 @@ class TasksAdapter : ListAdapter<Task, TasksAdapter.ViewHolder>(DiffUtilCallback
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = when (viewType) {
-            TOP -> DataBindingUtil.inflate<ViewDataBinding>(
-                LayoutInflater.from(parent.context),
-                R.layout.task_top_list_item,
-                parent,
-                false
-            )
-            BOTTOM -> DataBindingUtil.inflate<ViewDataBinding>(
-                LayoutInflater.from(parent.context),
-                R.layout.task_bottom_list_item,
-                parent,
-                false
-            )
-            else -> DataBindingUtil.inflate<ViewDataBinding>(
-                LayoutInflater.from(parent.context),
-                R.layout.task_list_item,
-                parent,
-                false
-            )
+        val layout = when (viewType) {
+            TOP -> R.layout.task_top_list_item
+            BOTTOM -> R.layout.task_bottom_list_item
+            else -> R.layout.task_list_item
         }
+        val binding = DataBindingUtil.inflate<ViewDataBinding>(
+            LayoutInflater.from(parent.context),
+            layout,
+            parent,
+            false
+        )
         return ViewHolder(binding.root)
     }
 
@@ -71,5 +65,13 @@ class TasksAdapter : ListAdapter<Task, TasksAdapter.ViewHolder>(DiffUtilCallback
         const val TOP = 0
         const val MIDDLE = 1
         const val BOTTOM = 2
+    }
+
+    override fun onItemSwipedToStart(position: Int) {
+        itemActionListener.onDeleteTask(getItem(position).id)
+    }
+
+    override fun onItemSwipedToEnd(position: Int) {
+        itemActionListener.onDoneTask(getItem(position).id)
     }
 }

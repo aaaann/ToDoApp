@@ -41,7 +41,7 @@
         <ImageView
             android:layout_width="@dimen/icon_size_small"
             android:layout_height="@dimen/icon_size_small"
-            android:layout_marginEnd="@dimen/visibility_icon_margin_end"
+            android:layout_marginEnd="@dimen/margin_medium_big"
             android:src="@drawable/ic_visibility_24dp"
             app:layout_constraintBottom_toBottomOf="@+id/done_tasks"
             app:layout_constraintEnd_toEndOf="parent"
