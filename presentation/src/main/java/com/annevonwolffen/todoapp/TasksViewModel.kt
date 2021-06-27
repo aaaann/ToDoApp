@@ -1,19 +1,44 @@
 package com.annevonwolffen.todoapp
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.annevonwolffen.domain.Priority
+import com.annevonwolffen.domain.settings.SettingsInteractor
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
-import java.util.*
+import java.util.Date
 
 /**
  *
  */
-class TasksViewModel : ViewModel(), TaskItemActionListener {
-    val tasks: LiveData<List<TaskPresentationModel>>
-        get() = _tasks
+class TasksViewModel(private val settingsInteractor: SettingsInteractor) : ViewModel(),
+    TaskItemActionListener {
+    val tasks = MediatorLiveData<List<TaskPresentationModel>>()
+    val isDoneTasksShown: LiveData<Boolean>
+        get() = _isDoneTasksShown
+    val doneTasksCount = MediatorLiveData<Int>()
     private val _tasks = MutableLiveData<List<TaskPresentationModel>>(emptyList())
+    private val _isDoneTasksShown = MutableLiveData<Boolean>(false)
+
+    init {
+        _isDoneTasksShown.value = settingsInteractor.doneTasksVisibility()
+        doneTasksCount.addSource(_tasks) {
+            doneTasksCount.value = it.count { task -> task.isDone }
+        }
+        tasks.addSource(_tasks) { list ->
+            tasks.value = _isDoneTasksShown.value?.takeIf { shown -> !shown }?.let {
+                list.filter { task -> !task.isDone }
+            } ?: list
+        }
+        tasks.addSource(_isDoneTasksShown) {
+            tasks.value = if (!it) {
+                _tasks.value?.filter { task -> !task.isDone }
+            } else {
+                _tasks.value
+            }
+        }
+    }
 
     fun loadTasks() {
         _tasks.value = listOf(
@@ -106,6 +131,11 @@ class TasksViewModel : ViewModel(), TaskItemActionListener {
         }
     }
 
+    fun onDoneTasksToggleClick() {
+        val isDoneTasksVisible = settingsInteractor.doneTasksVisibility()
+        settingsInteractor.setDoneTasksVisibility(!isDoneTasksVisible)
+        _isDoneTasksShown.value = !isDoneTasksVisible
+    }
 
     override fun onDoneTask(id: Long) {
         _tasks.value = _tasks.value?.toMutableList()?.apply {
