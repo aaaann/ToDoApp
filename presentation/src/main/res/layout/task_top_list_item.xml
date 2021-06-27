@@ -6,7 +6,11 @@
 
         <variable
             name="task"
-            type="com.annevonwolffen.domain.Task" />
+            type="com.annevonwolffen.todoapp.model.TaskPresentationModel" />
+
+        <variable
+            name="clickHandler"
+            type="com.annevonwolffen.todoapp.OnTaskClickListener" />
 
     </data>
 
@@ -19,6 +23,7 @@
 
         <include
             layout="@layout/task_list_item"
+            app:clickHandler="@{clickHandler}"
             app:task="@{task}" />
 
     </FrameLayout>

@@ -5,8 +5,11 @@ import android.view.View
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.annevonwolffen.domain.Task
+import com.annevonwolffen.todoapp.R
 import com.annevonwolffen.todoapp.TasksAdapter
+import com.annevonwolffen.todoapp.model.TaskPresentationModel
+import java.util.Date
+import java.util.Calendar
 
 @BindingAdapter("visibility")
 fun View.setVisibility(isVisible: Boolean) {
@@ -14,7 +17,7 @@ fun View.setVisibility(isVisible: Boolean) {
 }
 
 @BindingAdapter("tasksData")
-fun RecyclerView.setTasks(tasks: List<Task>?) {
+fun RecyclerView.setTasks(tasks: List<TaskPresentationModel>?) {
     tasks?.takeIf { adapter is TasksAdapter }?.let {
         (adapter as TasksAdapter).submitList(tasks)
     }
@@ -27,4 +30,17 @@ fun TextView.setCrossedOut(isCrossedOutNeeded: Boolean) {
     } else {
         paintFlags and (Paint.STRIKE_THRU_TEXT_FLAG.inv())
     }
+}
+
+@BindingAdapter("stringFromDate")
+fun TextView.setStringFromDate(date: Date?) {
+    this.text = date?.let {
+        val calendar = it.toCalendar()
+        resources.getString(
+            R.string.deadline_date_format,
+            calendar.get(Calendar.DAY_OF_MONTH),
+            resources.getStringArray(R.array.months_genitive)[calendar.get(Calendar.MONTH)],
+            calendar.get(Calendar.YEAR)
+        )
+    } ?: ""
 }

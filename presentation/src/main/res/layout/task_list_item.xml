@@ -4,11 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.annevonwolffen.todoapp.R"/>
+
+        <import type="com.annevonwolffen.todoapp.R" />
 
         <variable
             name="task"
-            type="com.annevonwolffen.domain.Task" />
+            type="com.annevonwolffen.todoapp.model.TaskPresentationModel" />
+
+        <variable
+            name="clickHandler"
+            type="com.annevonwolffen.todoapp.OnTaskClickListener" />
 
     </data>
 
@@ -18,10 +23,11 @@
         android:background="@drawable/list_item_background"
         android:clickable="true"
         android:focusable="true"
-        android:paddingBottom="@dimen/padding_medium_small"
-        android:paddingEnd="@dimen/padding_medium"
+        android:onClick="@{() -> clickHandler.onClickTask(task)}"
         android:paddingStart="@dimen/padding_medium"
-        android:paddingTop="@dimen/padding_medium_small">
+        android:paddingTop="@dimen/padding_medium_small"
+        android:paddingEnd="@dimen/padding_medium"
+        android:paddingBottom="@dimen/padding_medium_small">
 
         <CheckBox
             android:id="@+id/done_checkbox"
@@ -54,15 +60,15 @@
             android:id="@+id/date_to"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_extra_tiny"
             android:layout_marginTop="@dimen/margin_extra_tiny"
+            android:layout_marginBottom="@dimen/margin_extra_tiny"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="@{task.deadline}"
             android:textAppearance="@style/TextAppearance.ToDoApp.Subhead.Tertiary"
             app:layout_constraintStart_toStartOf="@+id/task_title"
             app:layout_constraintTop_toBottomOf="@+id/task_title"
-            app:visibility="@{!task.deadline.empty}"
+            app:stringFromDate="@{task.deadline}"
+            app:visibility="@{task.deadline != null}"
             tools:text="27 июня 2021"
             tools:visibility="visible" />
 

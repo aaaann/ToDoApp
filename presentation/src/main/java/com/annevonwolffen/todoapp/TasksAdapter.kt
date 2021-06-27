@@ -1,6 +1,5 @@
 package com.annevonwolffen.todoapp
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,18 +8,27 @@ import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.annevonwolffen.domain.Task
+import com.annevonwolffen.todoapp.model.TaskPresentationModel
 
-class TasksAdapter(private val itemActionListener: TaskItemActionListener) :
-    ListAdapter<Task, TasksAdapter.ViewHolder>(DiffUtilCallback()),
+class TasksAdapter(
+    private val itemActionListener: TaskItemActionListener,
+    private val itemClickListener: OnTaskClickListener
+) :
+    ListAdapter<TaskPresentationModel, TasksAdapter.ViewHolder>(DiffUtilCallback()),
     ItemTouchHelperCallback.ItemTouchHelperAdapter {
 
-    class DiffUtilCallback : DiffUtil.ItemCallback<Task>() {
+    class DiffUtilCallback : DiffUtil.ItemCallback<TaskPresentationModel>() {
 
-        override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean =
+        override fun areItemsTheSame(
+            oldItem: TaskPresentationModel,
+            newItem: TaskPresentationModel
+        ): Boolean =
             oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean =
+        override fun areContentsTheSame(
+            oldItem: TaskPresentationModel,
+            newItem: TaskPresentationModel
+        ): Boolean =
             oldItem == newItem
     }
 
@@ -36,7 +44,7 @@ class TasksAdapter(private val itemActionListener: TaskItemActionListener) :
             parent,
             false
         )
-        return ViewHolder(binding.root)
+        return ViewHolder(binding.root, itemClickListener)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -51,11 +59,13 @@ class TasksAdapter(private val itemActionListener: TaskItemActionListener) :
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
-        fun bind(task: Task) {
+    class ViewHolder(private val view: View, private val clickHandler: OnTaskClickListener) :
+        RecyclerView.ViewHolder(view) {
+        fun bind(task: TaskPresentationModel) {
             val binding = DataBindingUtil.getBinding<ViewDataBinding>(view)
             binding?.let {
                 it.setVariable(BR.task, task)
+                it.setVariable(BR.clickHandler, clickHandler)
                 it.executePendingBindings()
             }
         }

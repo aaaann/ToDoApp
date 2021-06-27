@@ -8,6 +8,10 @@
             name="viewModel"
             type="com.annevonwolffen.todoapp.TasksViewModel" />
 
+        <variable
+            name="onAddTaskListener"
+            type="com.annevonwolffen.todoapp.OnAddTaskClickListener" />
+
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -53,8 +57,20 @@
             android:layout_marginEnd="@dimen/margin_very_small"
             android:clipToPadding="false"
             android:overScrollMode="never"
+            android:paddingBottom="@dimen/padding_extra_tiny"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             app:tasksData="@{viewModel.tasks}" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="@dimen/fab_size"
+            android:layout_height="@dimen/fab_size"
+            android:layout_gravity="end|bottom"
+            android:layout_marginEnd="@dimen/margin_medium"
+            android:layout_marginBottom="@dimen/margin_medium_big"
+            android:backgroundTint="@color/colorBlue"
+            android:onClick="@{() -> onAddTaskListener.onAddTask()}"
+            android:src="@drawable/ic_add_24dp"
+            app:tint="@color/colorWhite" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

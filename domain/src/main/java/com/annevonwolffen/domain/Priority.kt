@@ -1,7 +1,7 @@
 package com.annevonwolffen.domain
 
-enum class Priority(val value: Int) {
-    UNDEFINED(0),
-    LOW(1),
-    HIGH(2)
+enum class Priority(val value: Int, val label: String) {
+    UNDEFINED(0, "Нет"),
+    LOW(1, "Низкий"),
+    HIGH(2, "Высокий")
 }
