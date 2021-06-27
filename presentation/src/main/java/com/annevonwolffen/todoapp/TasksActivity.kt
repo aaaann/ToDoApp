@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.annevonwolffen.domain.settings.SettingsInteractor
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
 import com.annevonwolffen.todoapp.notification.NotificationHelper
@@ -25,14 +26,23 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlin.math.abs
 
 class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
-    private val tasksViewModel: TasksViewModel by lazy {
-        ViewModelProvider(this)[TasksViewModel::class.java]
-    }
     private val notificationHelper: NotificationHelper by lazy {
-        NotificationHelper(applicationContext)
+        (applicationContext as AppDelegate).notificationHelper
+    }
+    private val settingsInteractor: SettingsInteractor by lazy {
+        (applicationContext as AppDelegate).settingsInteractor
+    }
+    private val tasksViewModel: TasksViewModel by lazy {
+        ViewModelProvider(
+            this,
+            ViewModelProviderFactory(androidx.core.util.Supplier {
+                TasksViewModel(settingsInteractor)
+            })
+        )[TasksViewModel::class.java]
     }
     private lateinit var appBarLayout: AppBarLayout
     private var appBarExpanded = true
+    private var doneTasksToggleOn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +91,7 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_done_tasks_toggle) {
-            // TODO: show smth to hide/show done tasks and update flag
+            tasksViewModel.onDoneTasksToggleClick()
             invalidateOptionsMenu()
         }
         return super.onOptionsItemSelected(item)
@@ -91,8 +101,10 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
         val doneTasksVisibilityToggle = menu.findItem(R.id.action_done_tasks_toggle)
         if (!appBarExpanded) {
             doneTasksVisibilityToggle.isVisible = true
-            // TODO: if else dependent of done tasks visibility
-            val drawable = ContextCompat.getDrawable(this, R.drawable.ic_visibility_24dp)
+            val drawable = ContextCompat.getDrawable(
+                this,
+                if (doneTasksToggleOn) R.drawable.ic_visibility_off_24dp else R.drawable.ic_visibility_24dp
+            )
             drawable?.let {
                 DrawableCompat.setTint(
                     it,
@@ -152,6 +164,10 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
         tasksViewModel.tasks.observe(
             this,
             Observer { notificationHelper.scheduleNotificationsForTasks(it.filterNot { task -> task.isDone || task.deadline == null }) })
+        tasksViewModel.isDoneTasksShown.observe(this, Observer {
+            doneTasksToggleOn = it
+            invalidateOptionsMenu()
+        })
     }
 
     companion object {
