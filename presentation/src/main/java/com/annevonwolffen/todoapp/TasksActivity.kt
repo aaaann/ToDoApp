@@ -12,11 +12,13 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.MenuItemCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
+import com.annevonwolffen.todoapp.notification.NotificationHelper
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.google.android.material.appbar.CollapsingToolbarLayout
@@ -25,6 +27,9 @@ import kotlin.math.abs
 class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     private val tasksViewModel: TasksViewModel by lazy {
         ViewModelProvider(this)[TasksViewModel::class.java]
+    }
+    private val notificationHelper: NotificationHelper by lazy {
+        NotificationHelper(applicationContext)
     }
     private lateinit var appBarLayout: AppBarLayout
     private var appBarExpanded = true
@@ -44,6 +49,7 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
         if (savedInstanceState == null) {
             tasksViewModel.loadTasks()
         }
+        initObservers()
     }
 
     private fun setUpRecyclerView() {
@@ -140,6 +146,12 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
 
     override fun onAddTask() {
         startActivityForResult(AddTaskActivity.newIntent(this), ADD_TASK_CODE)
+    }
+
+    private fun initObservers() {
+        tasksViewModel.tasks.observe(
+            this,
+            Observer { notificationHelper.scheduleNotificationsForTasks(it.filterNot { task -> task.isDone || task.deadline == null }) })
     }
 
     companion object {

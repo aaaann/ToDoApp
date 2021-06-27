@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.annevonwolffen.domain.Priority
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
+import java.util.*
 
 /**
  *
@@ -19,15 +20,18 @@ class TasksViewModel : ViewModel(), TaskItemActionListener {
             TaskPresentationModel(
                 id = 1,
                 title = "Закончить первую часть проекта ШМР",
+                deadline = Date(),
                 priority = Priority.HIGH
             ),
             TaskPresentationModel(
                 id = 2,
-                title = "Работа: пофиксить баг с удалением задания"
+                title = "Работа: пофиксить баг с удалением задания",
+                deadline = Date()
             ),
             TaskPresentationModel(
                 id = 3,
                 title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
+                deadline = Date(),
                 priority = Priority.LOW
             ),
             TaskPresentationModel(
