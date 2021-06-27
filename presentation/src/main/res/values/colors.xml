@@ -8,4 +8,7 @@
     <color name="colorBlue">#007AFF</color>
     <color name="colorRed">#FF3B30</color>
     <color name="colorGreen">#34C759</color>
+    <color name="colorSeparator">#33000000</color>
+    <color name="colorOverlay">#0F000000</color>
+    <color name="colorDisabled">#26000000</color>
 </resources>

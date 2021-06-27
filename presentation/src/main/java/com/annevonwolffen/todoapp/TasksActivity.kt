@@ -1,5 +1,7 @@
 package com.annevonwolffen.todoapp
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -14,12 +16,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
+import com.annevonwolffen.todoapp.model.TaskPresentationModel
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlin.math.abs
 
-class TasksActivity : AppCompatActivity() {
+class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     private val tasksViewModel: TasksViewModel by lazy {
         ViewModelProvider(this)[TasksViewModel::class.java]
     }
@@ -32,18 +35,27 @@ class TasksActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.lifecycleOwner = this
         binding.viewModel = tasksViewModel
+        binding.onAddTaskListener = this
+
+        setLightStatusBar()
+        setUpAppbar()
+        setUpRecyclerView()
 
         if (savedInstanceState == null) {
             tasksViewModel.loadTasks()
         }
-        setLightStatusBar()
-        setUpAppbar()
-        setUpRecyclerView()
     }
 
     private fun setUpRecyclerView() {
         findViewById<RecyclerView>(R.id.tasks_rv).run {
-            adapter = TasksAdapter(tasksViewModel)
+            adapter = TasksAdapter(tasksViewModel, object : OnTaskClickListener {
+                override fun onClickTask(task: TaskPresentationModel) {
+                    startActivityForResult(
+                        AddTaskActivity.newIntent(this@TasksActivity, task),
+                        ADD_TASK_CODE
+                    )
+                }
+            })
             val callback =
                 ItemTouchHelperCallback(adapter as ItemTouchHelperCallback.ItemTouchHelperAdapter)
             val itemTouchHelper = ItemTouchHelper(callback)
@@ -114,5 +126,25 @@ class TasksActivity : AppCompatActivity() {
                 invalidateOptionsMenu()
             }
         })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == ADD_TASK_CODE && resultCode == Activity.RESULT_OK) {
+            data?.getParcelableExtra<TaskPresentationModel>(ADD_TASK_KEY)
+                ?.let { tasksViewModel.saveTask(it) }
+            data?.getParcelableExtra<TaskPresentationModel>(DELETE_TASK_KEY)
+                ?.let { tasksViewModel.onDeleteTask(it.id) }
+        }
+    }
+
+    override fun onAddTask() {
+        startActivityForResult(AddTaskActivity.newIntent(this), ADD_TASK_CODE)
+    }
+
+    companion object {
+        private const val ADD_TASK_CODE = 1
+        const val ADD_TASK_KEY = "ADD_TASK_KEY"
+        const val DELETE_TASK_KEY = "DELETE_TASK_KEY"
     }
 }
