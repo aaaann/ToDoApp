@@ -44,7 +44,7 @@ class TasksAdapter(
             parent,
             false
         )
-        return ViewHolder(binding.root, itemClickListener)
+        return ViewHolder(binding.root, itemClickListener, itemActionListener)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -59,13 +59,18 @@ class TasksAdapter(
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(private val view: View, private val clickHandler: OnTaskClickListener) :
+    class ViewHolder(
+        private val view: View,
+        private val clickHandler: OnTaskClickListener,
+        private val itemActionListener: TaskItemActionListener
+    ) :
         RecyclerView.ViewHolder(view) {
         fun bind(task: TaskPresentationModel) {
             val binding = DataBindingUtil.getBinding<ViewDataBinding>(view)
             binding?.let {
                 it.setVariable(BR.task, task)
                 it.setVariable(BR.clickHandler, clickHandler)
+                it.setVariable(BR.doneHandler, itemActionListener)
                 it.executePendingBindings()
             }
         }
