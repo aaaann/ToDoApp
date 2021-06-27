@@ -38,5 +38,6 @@
     <dimen name="elevation_tiny">2dp</dimen>
 
     <dimen name="switch_track_width">50dp</dimen>
+    <dimen name="zero_size">0dp</dimen>
 
 </resources>
