@@ -42,7 +42,7 @@
             android:minWidth="@dimen/zero_size"
             android:minHeight="@dimen/zero_size"
             android:onClick="@{() -> doneHandler.onDoneTask(task.id)}"
-            android:padding="0dp"
+            android:theme="@style/Theme.ToDoApp.CheckBox"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
