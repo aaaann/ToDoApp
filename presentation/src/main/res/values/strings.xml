@@ -13,6 +13,8 @@
     <string name="deadline_label">Сделать до</string>
     <string name="delete">Удалить</string>
     <string name="deadline_date_format">%1$d %2$s %3$d</string>
+    <string name="notification_title">Сегодня вам нужно сделать %1$s</string>
+    <string name="notification_text">Не забудьте!</string>
 
     <string-array name="months_genitive">
         <item>"января"</item>
@@ -28,4 +30,13 @@
         <item>"ноября"</item>
         <item>"декабря"</item>
     </string-array>
+
+    <plurals name="notification_task_count">
+        <item quantity="zero">%d&#160;задач</item>
+        <item quantity="one">%d&#160;задачу</item>
+        <item quantity="two">%d&#160;задачи</item>
+        <item quantity="few">%d&#160;задачи</item>
+        <item quantity="many">%d&#160;задач</item>
+        <item quantity="other">%d&#160;задач</item>
+    </plurals>
 </resources>
