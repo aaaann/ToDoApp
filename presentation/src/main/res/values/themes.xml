@@ -59,9 +59,4 @@
         <item name="android:textAppearance">@style/TextAppearance.ToDoApp.Button</item>
         <item name="android:textColor">@color/colorBlue</item>
     </style>
-
-    <style name="Theme.ToDoApp.CheckBox" parent="@style/Widget.AppCompat.CompoundButton.CheckBox">
-        <item name="colorControlNormal">@color/colorSeparator</item>
-        <item name="colorControlActivated">@color/colorGreen</item>
-    </style>
 </resources>

@@ -38,11 +38,11 @@
             android:id="@+id/done_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:buttonTint="@{task.priority == Priority.HIGH ? @colorStateList/checkbox_tint_accent : @colorStateList/checkbox_tint}"
             android:checked="@{task.done}"
             android:minWidth="@dimen/zero_size"
             android:minHeight="@dimen/zero_size"
             android:onClick="@{() -> doneHandler.onDoneTask(task.id)}"
-            android:theme="@style/Theme.ToDoApp.CheckBox"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

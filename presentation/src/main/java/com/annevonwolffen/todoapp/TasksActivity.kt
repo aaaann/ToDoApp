@@ -35,9 +35,7 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     private val tasksViewModel: TasksViewModel by lazy {
         ViewModelProvider(
             this,
-            ViewModelProviderFactory(androidx.core.util.Supplier {
-                TasksViewModel(settingsInteractor)
-            })
+            ViewModelProviderFactory { TasksViewModel(settingsInteractor) }
         )[TasksViewModel::class.java]
     }
     private lateinit var appBarLayout: AppBarLayout
