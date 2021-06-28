@@ -12,6 +12,7 @@ import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
@@ -19,6 +20,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
+import androidx.core.widget.doOnTextChanged
 import com.annevonwolffen.domain.Priority
 import com.annevonwolffen.todoapp.TasksActivity.Companion.ADD_TASK_KEY
 import com.annevonwolffen.todoapp.TasksActivity.Companion.DELETE_TASK_KEY
@@ -29,7 +31,7 @@ import java.util.*
 
 class AddTaskActivity : AppCompatActivity() {
 
-    private lateinit var taskDescriptionTextView: TextView
+    private lateinit var taskDescriptionField: EditText
     private lateinit var deadlineDateLabel: TextView
 
     private var selectedPriority: Priority = Priority.UNDEFINED
@@ -68,6 +70,26 @@ class AddTaskActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        setSaveButtonColor(menu)
+        return true
+    }
+
+    private fun setSaveButtonColor(menu: Menu) {
+        val saveButton = menu.findItem(R.id.action_save)
+        val spannableTitle = SpannableString(getString(R.string.save))
+        val color =
+            if (taskDescriptionField.text.isEmpty()) R.color.colorDisabled else R.color.colorBlue
+        spannableTitle.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(this, color)),
+            0,
+            spannableTitle.length,
+            0
+        )
+        saveButton.title = spannableTitle
+        saveButton.isEnabled = taskDescriptionField.text.isNotEmpty()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             onBackPressed()
@@ -104,8 +126,9 @@ class AddTaskActivity : AppCompatActivity() {
     }
 
     private fun initTaskDescription() {
-        taskDescriptionTextView = findViewById(R.id.task_description_field)
-        taskDescriptionTextView.text = currentTask?.title.orEmpty()
+        taskDescriptionField = findViewById(R.id.task_description_field)
+        taskDescriptionField.setText(currentTask?.title.orEmpty())
+        taskDescriptionField.doOnTextChanged { _, _, _, _ -> invalidateOptionsMenu() }
     }
 
     private fun initPopupMenu() {
@@ -165,6 +188,7 @@ class AddTaskActivity : AppCompatActivity() {
                     )
                 }, initialYear, initialMonth, initialDay
             )
+            datePickerDialog.datePicker.minDate = Calendar.getInstance().timeInMillis
             datePickerDialog.show()
         }
     }
@@ -206,7 +230,7 @@ class AddTaskActivity : AppCompatActivity() {
     }
 
     private fun createTask(): TaskPresentationModel {
-        val description: String = taskDescriptionTextView.text.toString()
+        val description: String = taskDescriptionField.text.toString()
         val deadline: Date? =
             if (deadlineEnabled) getDateFromString(deadlineDateLabel.text.toString()) else null
         return currentTask?.copy(
