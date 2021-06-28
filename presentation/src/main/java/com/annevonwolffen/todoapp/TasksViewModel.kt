@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.annevonwolffen.domain.Priority
 import com.annevonwolffen.domain.settings.SettingsInteractor
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
+import com.annevonwolffen.todoapp.utils.map
 import java.util.Date
 
 /**
@@ -14,30 +15,29 @@ import java.util.Date
  */
 class TasksViewModel(private val settingsInteractor: SettingsInteractor) : ViewModel(),
     TaskItemActionListener {
-    val tasks = MediatorLiveData<List<TaskPresentationModel>>()
+    val tasks: LiveData<List<TaskPresentationModel>>
+        get() = (_tasks to _isDoneTasksShown).map { tasks, doneShown ->
+            val list = doneShown?.takeIf { shown -> !shown }?.let {
+                tasks?.filter { task -> !task.isDone }
+            } ?: tasks
+            list.orEmpty()
+                .sortedWith(compareBy<TaskPresentationModel, Date?>(nullsLast()) { t -> t.deadline }
+                    .thenByDescending { t -> t.priority.value })
+        }
     val isDoneTasksShown: LiveData<Boolean>
         get() = _isDoneTasksShown
-    val doneTasksCount = MediatorLiveData<Int>()
+    val doneTasksCount: LiveData<Int>
+        get() = _doneTasksCount
     private val _tasks = MutableLiveData<List<TaskPresentationModel>>(emptyList())
     private val _isDoneTasksShown = MutableLiveData<Boolean>(false)
+    private val _doneTasksCount = MediatorLiveData<Int>().apply {
+        addSource(_tasks) {
+            value = it.count { task -> task.isDone }
+        }
+    }
 
     init {
         _isDoneTasksShown.value = settingsInteractor.doneTasksVisibility()
-        doneTasksCount.addSource(_tasks) {
-            doneTasksCount.value = it.count { task -> task.isDone }
-        }
-        tasks.addSource(_tasks) { list ->
-            tasks.value = _isDoneTasksShown.value?.takeIf { shown -> !shown }?.let {
-                list.filter { task -> !task.isDone }
-            } ?: list
-        }
-        tasks.addSource(_isDoneTasksShown) {
-            tasks.value = if (!it) {
-                _tasks.value?.filter { task -> !task.isDone }
-            } else {
-                _tasks.value
-            }
-        }
     }
 
     fun loadTasks() {
