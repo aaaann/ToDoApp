@@ -15,6 +15,7 @@ import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.domain.settings.SettingsInteractor
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
@@ -41,6 +42,8 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     private lateinit var appBarLayout: AppBarLayout
     private var appBarExpanded = true
     private var doneTasksToggleOn = false
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapterDataObserver: RecyclerView.AdapterDataObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +64,8 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     }
 
     private fun setUpRecyclerView() {
-        findViewById<RecyclerView>(R.id.tasks_rv).run {
+        recyclerView = findViewById(R.id.tasks_rv)
+        recyclerView.run {
             adapter = TasksAdapter(tasksViewModel, object : OnTaskClickListener {
                 override fun onClickTask(task: TaskPresentationModel) {
                     startActivityForResult(
@@ -74,6 +78,18 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
                 ItemTouchHelperCallback(adapter as ItemTouchHelperCallback.ItemTouchHelperAdapter)
             val itemTouchHelper = ItemTouchHelper(callback)
             itemTouchHelper.attachToRecyclerView(this)
+            adapterDataObserver = object : RecyclerView.AdapterDataObserver() {
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    super.onItemRangeInserted(positionStart, itemCount)
+                    val visiblePos =
+                        (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                    if (visiblePos in 0 until positionStart) {
+                        appBarLayout.setExpanded(false)
+                    }
+                    scrollToPosition(positionStart)
+                }
+            }
+            adapter?.registerAdapterDataObserver(adapterDataObserver)
         }
     }
 
@@ -166,6 +182,11 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
             doneTasksToggleOn = it
             invalidateOptionsMenu()
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        recyclerView.adapter?.unregisterAdapterDataObserver(adapterDataObserver)
     }
 
     companion object {

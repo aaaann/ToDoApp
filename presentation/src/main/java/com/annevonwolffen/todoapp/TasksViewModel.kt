@@ -20,9 +20,9 @@ class TasksViewModel(private val settingsInteractor: SettingsInteractor) : ViewM
             val list = doneShown?.takeIf { shown -> !shown }?.let {
                 tasks?.filter { task -> !task.isDone }
             } ?: tasks
-            list?.sortedWith(compareBy<TaskPresentationModel, Date?>(nullsLast()) { t -> t.deadline }
-                .thenByDescending { t -> t.priority.value })
-                ?: emptyList()
+            list.orEmpty()
+                .sortedWith(compareBy<TaskPresentationModel, Date?>(nullsLast()) { t -> t.deadline }
+                    .thenByDescending { t -> t.priority.value })
         }
     val isDoneTasksShown: LiveData<Boolean>
         get() = _isDoneTasksShown
