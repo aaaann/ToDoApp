@@ -1,19 +1,36 @@
 package com.annevonwolffen.todoapp
 
+import android.util.Log
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.annevonwolffen.domain.Priority
+import com.annevonwolffen.domain.Task
+import com.annevonwolffen.domain.TasksInteractor
+import com.annevonwolffen.domain.handle
 import com.annevonwolffen.domain.settings.SettingsInteractor
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
+import com.annevonwolffen.todoapp.model.mapFromDomain
+import com.annevonwolffen.todoapp.model.mapToDomain
+import com.annevonwolffen.todoapp.utils.CoroutineDispatchers
 import com.annevonwolffen.todoapp.utils.map
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
 
 /**
  *
  */
-class TasksViewModel(private val settingsInteractor: SettingsInteractor) : ViewModel(),
+class TasksViewModel @Inject constructor(
+    private val settingsInteractor: SettingsInteractor,
+    private val tasksInteractor: TasksInteractor,
+    private val coroutineDispatchers: CoroutineDispatchers
+) :
+    ViewModel(),
     TaskItemActionListener {
     val tasks: LiveData<List<TaskPresentationModel>>
         get() = (_tasks to _isDoneTasksShown).map { tasks, doneShown ->
@@ -35,99 +52,35 @@ class TasksViewModel(private val settingsInteractor: SettingsInteractor) : ViewM
             value = it.count { task -> task.isDone }
         }
     }
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> = _isLoading // TODO: add shimmers
+
+    private val exceptionHandler =
+        CoroutineExceptionHandler { _, throwable -> onError(throwable.localizedMessage) }
 
     init {
         _isDoneTasksShown.value = settingsInteractor.doneTasksVisibility()
     }
 
     fun loadTasks() {
-        _tasks.value = listOf(
-            TaskPresentationModel(
-                id = 1,
-                title = "Закончить первую часть проекта ШМР",
-                deadline = Date(),
-                priority = Priority.HIGH
-            ),
-            TaskPresentationModel(
-                id = 2,
-                title = "Работа: пофиксить баг с удалением задания",
-                deadline = Date()
-            ),
-            TaskPresentationModel(
-                id = 3,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                deadline = Date(),
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 4,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 5,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 6,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 7,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 8,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 9,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 10,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 11,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 12,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 13,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 14,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            ),
-            TaskPresentationModel(
-                id = 15,
-                title = "ПЦР тест на коронавирус: Кутузовский пр., 32 к 1, вход со стороны улицы Кульнева, справа от первого входа в Сбер",
-                priority = Priority.LOW
-            )
-        )
+        viewModelScope.launch(exceptionHandler) {
+            _isLoading.value = true
+            val result = withContext(coroutineDispatchers.ioDispatcher) {
+                tasksInteractor.getAllTasks()
+            }
+            result.handle(::onSuccess, ::onError)
+        }
     }
 
     fun saveTask(task: TaskPresentationModel) {
-        // TODO: send to server or db, add to list
-        _tasks.value = _tasks.value?.toMutableList()?.apply {
-            val oldTask = firstOrNull { it.id == task.id }
-            oldTask?.let { this[indexOf(it)] = task }
-                ?: add(task.copy(id = (this.size + 1).toLong()))
+        val taskDomain = task.copy(id = task.id ?: UUID.randomUUID().toString()).mapToDomain()
+        viewModelScope.launch(exceptionHandler) {
+            _isLoading.value = true
+            val result = withContext(coroutineDispatchers.ioDispatcher) {
+                task.id?.let { tasksInteractor.updateTask(taskDomain) }
+                    ?: tasksInteractor.addTask(taskDomain)
+            }
+            result.handle(::onSuccess, ::onError)
         }
     }
 
@@ -137,17 +90,42 @@ class TasksViewModel(private val settingsInteractor: SettingsInteractor) : ViewM
         _isDoneTasksShown.value = !isDoneTasksVisible
     }
 
-    override fun onDoneTask(id: Long) {
+    override fun onDoneTask(task: TaskPresentationModel) {
         _tasks.value = _tasks.value?.toMutableList()?.apply {
-            val doneTask = firstOrNull { it.id == id }
+            val doneTask = firstOrNull { it.id == task.id }
             doneTask?.let { this[indexOf(it)] = it.copy(isDone = !it.isDone) }
         }
-        // TODO: later send request to server
+        viewModelScope.launch(exceptionHandler) {
+            val result = withContext(coroutineDispatchers.ioDispatcher) {
+                tasksInteractor.updateTask(task.copy(isDone = !task.isDone).mapToDomain())
+            }
+            result.handle(::onSuccess, ::onError)
+        }
     }
 
-    override fun onDeleteTask(id: Long) {
+    override fun onDeleteTask(task: TaskPresentationModel) {
         _tasks.value = _tasks.value?.toMutableList()?.apply {
-            remove(firstOrNull { it.id == id })
+            remove(firstOrNull { it.id == task.id })
         }
+        viewModelScope.launch(exceptionHandler) {
+            val result = withContext(coroutineDispatchers.ioDispatcher) {
+                tasksInteractor.deleteTask(task.mapToDomain())
+            }
+            result.handle(::onSuccess, ::onError)
+        }
+    }
+
+    private fun onSuccess(tasks: List<Task>) {
+        _isLoading.value = false
+        _tasks.value = tasks.map { task -> task.mapFromDomain() }
+    }
+
+    private fun onError(errorMessage: String?) {
+        _isLoading.value = false
+        Log.e(TAG, "Exception occurred: $errorMessage")
+    }
+
+    private companion object {
+        const val TAG = "TasksViewModel"
     }
 }

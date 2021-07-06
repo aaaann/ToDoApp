@@ -17,27 +17,24 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.annevonwolffen.domain.settings.SettingsInteractor
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
 import com.annevonwolffen.todoapp.notification.NotificationHelper
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import javax.inject.Inject
 import kotlin.math.abs
 
 class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
-    private val notificationHelper: NotificationHelper by lazy {
-        (applicationContext as AppDelegate).notificationHelper
-    }
-    private val settingsInteractor: SettingsInteractor by lazy {
-        (applicationContext as AppDelegate).settingsInteractor
-    }
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProviderFactory
+
     private val tasksViewModel: TasksViewModel by lazy {
-        ViewModelProvider(
-            this,
-            ViewModelProviderFactory { TasksViewModel(settingsInteractor) }
-        )[TasksViewModel::class.java]
+        ViewModelProvider(this, viewModelFactory)[TasksViewModel::class.java]
     }
     private lateinit var appBarLayout: AppBarLayout
     private var appBarExpanded = true
@@ -49,6 +46,8 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
         super.onCreate(savedInstanceState)
         val binding: TasksActivityBinding = TasksActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        (application as AppDelegate).appComponent.inject(this)
+
         binding.lifecycleOwner = this
         binding.viewModel = tasksViewModel
         binding.onAddTaskListener = this
@@ -166,7 +165,7 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
             data?.getParcelableExtra<TaskPresentationModel>(ADD_TASK_KEY)
                 ?.let { tasksViewModel.saveTask(it) }
             data?.getParcelableExtra<TaskPresentationModel>(DELETE_TASK_KEY)
-                ?.let { tasksViewModel.onDeleteTask(it.id) }
+                ?.let { tasksViewModel.onDeleteTask(it) }
         }
     }
 

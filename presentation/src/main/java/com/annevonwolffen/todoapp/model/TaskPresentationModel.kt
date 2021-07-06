@@ -7,9 +7,11 @@ import java.util.Date
 
 @Parcelize
 data class TaskPresentationModel(
-    val id: Long = 0,
+    val id: String? = null,
     val title: String,
     val deadline: Date? = null,
     val isDone: Boolean = false,
-    val priority: Priority = Priority.UNDEFINED
+    val priority: Priority = Priority.UNDEFINED,
+    val createdAt: Long = 0,
+    val updatedAt: Long = 0
 ) : Parcelable

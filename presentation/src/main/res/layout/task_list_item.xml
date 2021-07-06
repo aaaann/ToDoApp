@@ -42,7 +42,7 @@
             android:checked="@{task.done}"
             android:minWidth="@dimen/zero_size"
             android:minHeight="@dimen/zero_size"
-            android:onClick="@{() -> doneHandler.onDoneTask(task.id)}"
+            android:onClick="@{() -> doneHandler.onDoneTask(task)}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

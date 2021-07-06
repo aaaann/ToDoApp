@@ -83,10 +83,10 @@ class TasksAdapter(
     }
 
     override fun onItemSwipedToStart(position: Int) {
-        itemActionListener.onDeleteTask(getItem(position).id)
+        itemActionListener.onDeleteTask(getItem(position))
     }
 
     override fun onItemSwipedToEnd(position: Int) {
-        itemActionListener.onDoneTask(getItem(position).id)
+        itemActionListener.onDoneTask(getItem(position))
     }
 }

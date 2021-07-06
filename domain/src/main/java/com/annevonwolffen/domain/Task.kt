@@ -7,9 +7,11 @@ import java.util.Date
  * @property
  */
 data class Task(
-    val id: Long = 0,
+    val id: String,
     val title: String,
     val deadline: Date? = null,
     val isDone: Boolean = false,
-    val priority: Priority = Priority.UNDEFINED
+    val priority: Priority = Priority.UNDEFINED,
+    val createdAt: Long,
+    val updatedAt: Long
 )
