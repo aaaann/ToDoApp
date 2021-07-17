@@ -3,11 +3,11 @@ package com.annevonwolffen.todoapp
 import android.app.Activity
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -19,7 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.annevonwolffen.todoapp.databinding.TasksActivityBinding
 import com.annevonwolffen.todoapp.model.TaskPresentationModel
-import com.annevonwolffen.todoapp.notification.NotificationHelper
+import com.annevonwolffen.todoapp.work.notification.NotificationWorkManager
+import com.annevonwolffen.todoapp.work.sync.SyncWorkManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.google.android.material.appbar.CollapsingToolbarLayout
@@ -28,7 +29,10 @@ import kotlin.math.abs
 
 class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     @Inject
-    lateinit var notificationHelper: NotificationHelper
+    lateinit var notificationWorkManager: NotificationWorkManager
+
+    @Inject
+    lateinit var syncWorkManager: SyncWorkManager
 
     @Inject
     lateinit var viewModelFactory: ViewModelProviderFactory
@@ -55,6 +59,9 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
         setLightStatusBar()
         setUpAppbar()
         setUpRecyclerView()
+
+        syncWorkManager.scheduleSync()
+        notificationWorkManager.scheduleNotificationsForTasks()
 
         if (savedInstanceState == null) {
             tasksViewModel.loadTasks()
@@ -174,9 +181,6 @@ class TasksActivity : AppCompatActivity(), OnAddTaskClickListener {
     }
 
     private fun initObservers() {
-        tasksViewModel.tasks.observe(
-            this,
-            Observer { notificationHelper.scheduleNotificationsForTasks(it.filterNot { task -> task.isDone || task.deadline == null }) })
         tasksViewModel.isDoneTasksShown.observe(this, Observer {
             doneTasksToggleOn = it
             invalidateOptionsMenu()

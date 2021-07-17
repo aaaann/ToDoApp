@@ -2,11 +2,13 @@ package com.annevonwolffen.todoapp.di
 
 import android.content.Context
 import androidx.room.Room
-import com.annevonwolffen.data.database.DB_NAME
+import androidx.work.Configuration
 import com.annevonwolffen.data.database.TasksDatabase
-import com.annevonwolffen.todoapp.notification.NotificationHelper
 import com.annevonwolffen.todoapp.utils.CoroutineDispatchers
 import com.annevonwolffen.todoapp.utils.CoroutineDispatchersImpl
+import com.annevonwolffen.todoapp.work.TasksDelegatingWorkerFactory
+import com.annevonwolffen.todoapp.work.notification.NotificationWorkManager
+import com.annevonwolffen.todoapp.work.sync.SyncWorkManager
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -21,8 +23,25 @@ interface AppModule {
     companion object {
         @AppScope
         @Provides
-        fun provideNotificationHelper(context: Context): NotificationHelper {
-            return NotificationHelper(context)
+        fun provideNotificationHelper(context: Context): NotificationWorkManager {
+            return NotificationWorkManager(context)
+        }
+
+        @AppScope
+        @Provides
+        fun provideSyncWorkManager(context: Context): SyncWorkManager {
+            return SyncWorkManager(context)
+        }
+
+        @AppScope
+        @Provides
+        fun provideWorkManagerConfiguration(
+            workerFactory: TasksDelegatingWorkerFactory
+        ): Configuration {
+            return Configuration.Builder()
+                .setMinimumLoggingLevel(android.util.Log.DEBUG)
+                .setWorkerFactory(workerFactory)
+                .build()
         }
 
         @AppScope
@@ -31,7 +50,7 @@ interface AppModule {
             return Room.databaseBuilder(
                 context,
                 TasksDatabase::class.java,
-                DB_NAME
+                "Tasks.db"
             ).build()
         }
     }

@@ -1,4 +1,4 @@
-package com.annevonwolffen.todoapp.notification
+package com.annevonwolffen.todoapp.work.notification
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,19 +11,35 @@ import android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION
 import android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE
 import android.media.RingtoneManager
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.annevonwolffen.domain.TasksInteractor
+import com.annevonwolffen.domain.handle
 import com.annevonwolffen.todoapp.R
 import com.annevonwolffen.todoapp.TasksActivity
-import com.annevonwolffen.todoapp.notification.NotificationHelper.Companion.NOTIFICATION_DATA_TASKS_NUMBER
+import com.annevonwolffen.todoapp.utils.toCalendar
+import java.util.Calendar
 
-class NotificationWorker(private val appContext: Context, workerParams: WorkerParameters) :
-    Worker(appContext, workerParams) {
-    override fun doWork(): Result {
-        sendNotification(inputData.getInt(NOTIFICATION_DATA_TASKS_NUMBER, DEFAULT_TASKS_NUMBER))
+class NotificationWorker(
+    private val appContext: Context,
+    workerParams: WorkerParameters,
+    private val interactor: TasksInteractor
+) : CoroutineWorker(appContext, workerParams) {
+    override suspend fun doWork(): Result {
+        val result = interactor.getAllTasks()
+        result.handle({ tasks ->
+            sendNotification(
+                tasks.count {
+                    it.deadline?.toCalendar()
+                        ?.get(Calendar.DAY_OF_MONTH) ?: 0 == Calendar.getInstance()
+                        .get(Calendar.DAY_OF_MONTH)
+                }.takeIf { it > 0 } ?: return@handle
+            )
+        }, { Log.d(TAG, "Error occurred while making notification: $it") })
         return Result.success()
     }
 
@@ -69,7 +85,10 @@ class NotificationWorker(private val appContext: Context, workerParams: WorkerPa
         pendingIntent: PendingIntent,
         tasksNumber: Int
     ): Notification {
-        val notificationBuilder = NotificationCompat.Builder(appContext, NOTIFICATION_CHANNEL)
+        val notificationBuilder = NotificationCompat.Builder(
+            appContext,
+            NOTIFICATION_CHANNEL
+        )
             .setChannelId(NOTIFICATION_CHANNEL)
             .setContentIntent(pendingIntent)
             .setContentTitle(
@@ -88,15 +107,18 @@ class NotificationWorker(private val appContext: Context, workerParams: WorkerPa
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
             .setVibrate(longArrayOf(0, 100, 200, 300))
-            .setLights(ContextCompat.getColor(appContext, R.color.colorBlue), LED_ON_MS, LED_OFF_MS)
+            .setLights(
+                ContextCompat.getColor(appContext, R.color.colorBlue),
+                LED_ON_MS,
+                LED_OFF_MS
+            )
         return notificationBuilder.build()
     }
 
     companion object {
-        private const val DEFAULT_TASKS_NUMBER = 1
         private const val NOTIFICATION_CHANNEL = "ToDoApp_channel_1"
         private const val LED_ON_MS = 1
         private const val LED_OFF_MS = 1
-
+        const val TAG = "NotificationWorker"
     }
 }

@@ -23,7 +23,14 @@ import java.util.UUID
 import javax.inject.Inject
 
 /**
- *
+ * Вьюмодель для основного экрана с задачами
+ * @param settingsInteractor интерактор для получения флага показа/скрытия выполненных задач
+ * @param tasksInteractor интерактор для выполнения запросов по задачам на сервер и в базу данных
+ * @param coroutineDispatchers диспатчеры для управления потоками
+ * @property tasks [LiveData] со списком задачи для отображения на главном экране
+ * @property isDoneTasksShown [LiveData] с [Boolean] флагом отображения/скрытия выполненных задач
+ * @property doneTasksCount [LiveData] с [Int] значением кол-ва выполненных задач
+ * @property isLoading [LiveData] c [Boolean] флагом для отображения/скрытия шиммеров
  */
 class TasksViewModel @Inject constructor(
     private val settingsInteractor: SettingsInteractor,
@@ -53,7 +60,7 @@ class TasksViewModel @Inject constructor(
         }
     }
     private val _isLoading = MutableLiveData<Boolean>(false)
-    val isLoading: LiveData<Boolean> = _isLoading // TODO: add shimmers
+    val isLoading: LiveData<Boolean> = _isLoading
 
     private val exceptionHandler =
         CoroutineExceptionHandler { _, throwable -> onError(throwable.localizedMessage) }
@@ -73,14 +80,25 @@ class TasksViewModel @Inject constructor(
     }
 
     fun saveTask(task: TaskPresentationModel) {
-        val taskDomain = task.copy(id = task.id ?: UUID.randomUUID().toString()).mapToDomain()
+        val generatedId = UUID.randomUUID().toString()
+        _tasks.value = _tasks.value?.toMutableList()?.apply {
+            task.id?.let {
+                firstOrNull { it.id == task.id }?.let { this[indexOf(it)] = task }
+            } ?: add(task.copy(id = generatedId))
+        }
+        val taskDomain = task.copy(id = task.id ?: generatedId).mapToDomain()
         viewModelScope.launch(exceptionHandler) {
-            _isLoading.value = true
             val result = withContext(coroutineDispatchers.ioDispatcher) {
                 task.id?.let { tasksInteractor.updateTask(taskDomain) }
                     ?: tasksInteractor.addTask(taskDomain)
             }
-            result.handle(::onSuccess, ::onError)
+            result.handle({ task ->
+                _tasks.value = _tasks.value?.toMutableList()?.apply {
+                    firstOrNull { it.id == task.id }?.let {
+                        this[indexOf(it)] = task.mapFromDomain()
+                    }
+                }
+            }, ::onError)
         }
     }
 
@@ -99,7 +117,13 @@ class TasksViewModel @Inject constructor(
             val result = withContext(coroutineDispatchers.ioDispatcher) {
                 tasksInteractor.updateTask(task.copy(isDone = !task.isDone).mapToDomain())
             }
-            result.handle(::onSuccess, ::onError)
+            result.handle({ task ->
+                _tasks.value = _tasks.value?.toMutableList()?.apply {
+                    firstOrNull { it.id == task.id }?.let {
+                        this[indexOf(it)] = task.mapFromDomain()
+                    }
+                }
+            }, ::onError)
         }
     }
 
@@ -111,7 +135,7 @@ class TasksViewModel @Inject constructor(
             val result = withContext(coroutineDispatchers.ioDispatcher) {
                 tasksInteractor.deleteTask(task.mapToDomain())
             }
-            result.handle(::onSuccess, ::onError)
+            result.handle({}, ::onError)
         }
     }
 
