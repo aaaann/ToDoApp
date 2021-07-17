@@ -66,6 +66,16 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
     implementation "com.squareup.okhttp3:logging-interceptor:$loggingInterceptor"
+    implementation "com.facebook.shimmer:shimmer:$shimmer"
+
+    implementation "com.google.truth:truth:$truth"
+
+    // Coroutines testing
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines"
+
+    testImplementation "io.mockk:mockk:$mockk"
+
+    testImplementation "androidx.arch.core:core-testing:$archCoreTesting"
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

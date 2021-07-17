@@ -26,14 +26,14 @@ fun TaskServerModel.toDb(): TaskDbModel = TaskDbModel(
     updatedAt
 )
 
-fun Task.toServer(): TaskServerModel = TaskServerModel(
+fun TaskServerModel.toDomain(): Task = Task(
     id,
-    title,
-    priority.serverName,
-    isDone,
-    deadline?.let { it.time / SECONDS_MULTIPLIER } ?: 0,
+    text,
+    if (deadline == 0L) null else Date(deadline * SECONDS_MULTIPLIER),
+    done,
+    Priority.values().first { it.serverName == importance },
     createdAt,
     updatedAt
 )
 
-private const val SECONDS_MULTIPLIER = 1000L
+const val SECONDS_MULTIPLIER = 1000L

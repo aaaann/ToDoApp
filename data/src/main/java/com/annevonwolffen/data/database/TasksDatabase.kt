@@ -9,4 +9,3 @@ import androidx.room.TypeConverters
 abstract class TasksDatabase : RoomDatabase() {
     abstract fun tasksDao(): TasksDao
 }
-const val DB_NAME = "Tasks.db"

@@ -60,17 +60,63 @@
             android:paddingBottom="@dimen/padding_extra_tiny"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:tasksData="@{viewModel.tasks}" />
+            app:tasksData="@{viewModel.tasks}"
+            app:visibility="@{!viewModel.isLoading}" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add"
             android:layout_width="@dimen/fab_size"
             android:layout_height="@dimen/fab_size"
             android:layout_gravity="end|bottom"
             android:layout_marginEnd="@dimen/margin_medium"
             android:layout_marginBottom="@dimen/margin_medium_big"
-            android:backgroundTint="@color/colorBlue"
+            android:backgroundTint="@{viewModel.isLoading ? @color/colorDisabled : @color/colorBlue}"
+            android:enabled="@{!viewModel.isLoading}"
             android:onClick="@{() -> onAddTaskListener.onAddTask()}"
             android:src="@drawable/ic_add_24dp"
             app:tint="@color/colorWhite" />
+
+        <LinearLayout
+            visibility="@{viewModel.isLoading}"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_very_small"
+            android:layout_marginTop="@dimen/margin_medium"
+            android:layout_marginEnd="@dimen/margin_very_small"
+            android:background="@drawable/radius_corner_background"
+            android:orientation="vertical"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <include
+                layout="@layout/task_list_shimmer_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+            <include
+                layout="@layout/task_list_shimmer_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+            <include
+                layout="@layout/task_list_shimmer_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+            <include
+                layout="@layout/task_list_shimmer_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+            <include
+                layout="@layout/task_list_shimmer_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+        </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
